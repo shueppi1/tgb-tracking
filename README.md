@@ -190,6 +190,20 @@ Alle Routen unter `/api`, außer `login`, `health` und `event-types` nur mit
 | GET | `/matches/:id/export/{events,players,goalkeepers}.csv` · `/export.zip` | CSV-Export |
 | GET | `/stats/seasons` · `/stats/season?season=2026/27` | Saisonstatistik |
 
+## Vereinslogo
+
+`frontend/public/logo.svg` (Kopfzeile und Anmeldung) und `frontend/public/favicon.svg`
+(Browser-Tab) sind **Platzhalter** – ein von Hand nachgebautes Hasen-Wappen in Vereinsrot
+`#d8232a`. Zum Austausch genügt es, die offiziellen Dateien unter denselben Pfaden
+abzulegen; der Code muss nicht angepasst werden. Anforderungen: SVG mit transparentem
+Hintergrund, hochkant im Seitenverhältnis von etwa 1046 : 1920, für das Favicon quadratisch.
+
+Die Farben der App leiten sich aus dem Logo ab. `--brand` und die davon abgeleiteten Werte
+in [`frontend/src/styles.css`](frontend/src/styles.css) färben nur den Rahmen der App
+(Kopfzeile, Navigation, Anmeldung, Buttons, Tabellen). Die Trackingansicht behält bewusst
+ihre eigenen Farben: `--accent` bleibt blau für Fokus und Auswahl, damit Rot dort weiterhin
+nur „Stopp" oder „Löschen" bedeutet.
+
 ## Projektstruktur
 
 ```
@@ -201,6 +215,7 @@ frontend/src/domain/        events, clock, stats, ops – reine Logik, getestet 
 frontend/src/store/         zustand-Stores, Outbox (localStorage)
 frontend/src/pages/         Login, Übersicht, Kader, Neues Spiel, Tracking, Auswertung, Archiv, Statistik
 frontend/src/components/    ClockBar, EventGrid, PlayerSheet, SummaryTables, EventLog, …
+frontend/public/            Vereinslogo und Favicon (werden unverändert nach dist/ kopiert)
 docker-compose.yml          mongo + api + web
 deploy/Caddyfile.example    Site-Block für einen Caddy auf dem Host
 e2e/                        Playwright-Smoketest + mongomock-Devserver

@@ -8,7 +8,10 @@ export default function Layout() {
     <>
       <header className="shell-header">
         <NavLink to="/" className="brand">
-          TGB Tracking
+          <img src="/logo.svg" alt="" width={30} height={55} />
+          <span>
+            <b>TGB</b> Tracking
+          </span>
         </NavLink>
         <nav className="shell-nav">
           <NavLink to="/" end>
@@ -33,6 +36,11 @@ export default function Layout() {
       <main className="page">
         <Outlet />
       </main>
+      <footer className="shell-footer">
+        <a href="https://tgb-handball.online" target="_blank" rel="noreferrer">
+          TGB Darmstadt Handball
+        </a>
+      </footer>
     </>
   );
 }
