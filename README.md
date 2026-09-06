@@ -16,7 +16,9 @@ Live-Tracking mit Spieluhr, Auswertung mit CSV-Export, Archiv und Saisonstatisti
    zwei Schritten: erst Ereignis, dann – falls nötig – Spieler/Torwart. Live-Zusammenfassung,
    Verlauf mit Löschen einzelner Einträge, Rückgängig.
 4. **Auswertung** – Spieler-, Torhüter- und Team-Tabellen, drei CSV-Dateien (Ereignisse,
-   Spieler, Torhüter) oder als ZIP. Semikolon-getrennt mit UTF‑8‑BOM für Excel (deutsch).
+   Spieler, Torhüter) oder als ZIP. Die Ereignis-Datei enthält nur die Zeitstempel der
+   Team-Ereignisse (ohne Spieler), nach Titel sortiert.
+   Semikolon-getrennt mit UTF‑8‑BOM für Excel (deutsch).
 5. **Archiv & Saisonstatistik** – alle Spiele bleiben gespeichert; Statistik über eine Saison.
 
 ### Ereignisse

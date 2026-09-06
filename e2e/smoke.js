@@ -233,6 +233,11 @@ async function main() {
     await page.waitForSelector('.sync[data-status="synced"]');
     log('keeper scored in 2nd half, 3 : 1');
 
+    await ev('Tempo+').click();
+    await page.waitForSelector('.stat:has(.label:text-is("Tempo+")) .value:text-is("1")');
+    await page.waitForSelector('.sync[data-status="synced"]');
+    log('team event Tempo+ recorded in 2nd half');
+
     // --- finish → result -----------------------------------------------------
     await page.click('.clockbar .menu > button');
     await page.click('.menu-list button:has-text("Spiel beenden")');
@@ -250,9 +255,10 @@ async function main() {
     const csv = fs.readFileSync(csvPath, 'utf8');
     expect(csv.charCodeAt(0) === 0xfeff, 'CSV starts with BOM');
     const lines = csv.slice(1).split(/\r?\n/).filter(Boolean);
-    expect(lines[0].startsWith('Nr;Halbzeit;Spielzeit;Ereignis'), 'CSV header');
-    expect(lines.length === 7, `6 event rows (${lines.length - 1})`);
-    expect(lines.some((l) => l.includes(';Tor;7;Max;')), 'CSV contains Max goal');
+    expect(lines[0] === 'Nr;Ereignis;Halbzeit;Spielzeit;Uhrzeit (UTC)', `CSV header (${lines[0]})`);
+    // Team events only: Angriff+ was deleted from the Verlauf, so only Tempo+ remains.
+    expect(lines.length === 2, `1 team event row (${lines.length - 1})`);
+    expect(lines[1].startsWith('1;Tempo+;2;'), `CSV row is the team event (${lines[1]})`);
     log(`events CSV ok (${dl.suggestedFilename()})`);
 
     const [zip] = await Promise.all([page.waitForEvent('download'), page.click('button:has-text("Alle drei (ZIP)")')]);

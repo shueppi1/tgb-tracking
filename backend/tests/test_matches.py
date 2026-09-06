@@ -144,10 +144,12 @@ def test_summary_and_exports(client, auth, roster, match):
         add_event("d", "e4", "GEHALTEN_6M", roster["timo"]["id"], seconds=100),
         add_event("e", "e5", "GGTOR_7M", roster["timo"]["id"], seconds=200),
         add_event("f", "e6", "GGTOR_9M", roster["timo"]["id"], seconds=300),
-        add_event("g", "e7", "TEMPO_PLUS", seconds=400))
+        add_event("g", "e7", "TEMPO_PLUS", seconds=400),
+        add_event("h", "e8", "ANGRIFF_PLUS", half=2, seconds=500),
+        add_event("i", "e9", "ANGRIFF_PLUS", seconds=800))
     summary = client.get(f"/api/matches/{mid}/summary", headers=auth).get_json()["summary"]
     assert summary["score"] == {"own": 2, "opponent": 2}
-    assert summary["team"]["TEMPO_PLUS"] == 1 and summary["team"]["ANGRIFF_PLUS"] == 0
+    assert summary["team"]["TEMPO_PLUS"] == 1 and summary["team"]["ANGRIFF_PLUS"] == 2
     by_id = {p["playerId"]: p for p in summary["players"]}
     assert by_id[roster["max"]["id"]]["counts"]["TOR"] == 2
     assert by_id[roster["leo"]["id"]]["counts"]["ASSIST"] == 1
@@ -160,10 +162,15 @@ def test_summary_and_exports(client, auth, roster, match):
     text = res.data.decode("utf-8")
     assert text.startswith("\ufeff")
     lines = text.lstrip("\ufeff").splitlines()
-    assert lines[0].split(";")[:4] == ["Nr", "Halbzeit", "Spielzeit", "Ereignis"]
-    assert len(lines) == 8
-    assert lines[1].split(";")[1:6] == ["1", "01:05", "Tor", "7", "Max"]
-    assert lines[-1].split(";")[1:4] == ["2", "31:40", "Tor"]
+    assert lines[0].split(";") == ["Nr", "Ereignis", "Halbzeit", "Spielzeit", "Uhrzeit (UTC)"]
+    # Only the three team events, sorted by title, chronological within a title.
+    assert len(lines) == 4
+    assert [row.split(";")[1:4] for row in lines[1:]] == [
+        ["Angriff+", "1", "13:20"],
+        ["Angriff+", "2", "08:20"],
+        ["Tempo+", "1", "06:40"],
+    ]
+    assert lines[1].split(";")[4] == "2026-09-06 17:01:00"
     assert 'filename="2026-09-06_HSG-Test_ereignisse.csv"' in res.headers["Content-Disposition"]
 
     text = client.get(f"/api/matches/{mid}/export/players.csv", headers=auth).data.decode()
