@@ -1,0 +1,50 @@
+{
+  "description": "Shared fixture: backend/tests/test_stats.py and frontend/src/domain/stats.test.ts both assert the same expectations against this match, so the two aggregation implementations cannot drift.",
+  "match": {
+    "id": "m1",
+    "opponent": "HSG Test",
+    "kickoff": "2026-09-06T17:00:00Z",
+    "season": "2026/27",
+    "homeAway": "home",
+    "status": "finished",
+    "roster": [
+      { "playerId": "p1", "displayName": "Max", "number": 7, "position": "field" },
+      { "playerId": "p2", "displayName": "Leo", "number": 10, "position": "field" },
+      { "playerId": "p3", "displayName": "Timo", "number": 1, "position": "goalkeeper" },
+      { "playerId": "p4", "displayName": "Jonas", "number": 12, "position": "goalkeeper" }
+    ],
+    "clock": { "half": 2, "running": false, "baseSeconds": 3600, "startedAt": null },
+    "events": [
+      { "eventId": "e01", "type": "TOR", "half": 1, "clockSeconds": 65, "playerId": "p1", "recordedAt": "2026-09-06T17:01:05Z" },
+      { "eventId": "e02", "type": "ASSIST", "half": 1, "clockSeconds": 70, "playerId": "p2", "recordedAt": "2026-09-06T17:01:10Z" },
+      { "eventId": "e03", "type": "ANGRIFF_PLUS", "half": 1, "clockSeconds": 120, "playerId": null, "recordedAt": "2026-09-06T17:02:00Z" },
+      { "eventId": "e04", "type": "GEHALTEN_6M", "half": 1, "clockSeconds": 200, "playerId": "p3", "recordedAt": "2026-09-06T17:03:20Z" },
+      { "eventId": "e05", "type": "GGTOR_9M", "half": 1, "clockSeconds": 260, "playerId": "p3", "recordedAt": "2026-09-06T17:04:20Z" },
+      { "eventId": "e06", "type": "DEF_MINUS", "half": 1, "clockSeconds": 300, "playerId": "p2", "recordedAt": "2026-09-06T17:05:00Z" },
+      { "eventId": "e07", "type": "FW", "half": 1, "clockSeconds": 400, "playerId": "p1", "recordedAt": "2026-09-06T17:06:40Z" },
+      { "eventId": "e08", "type": "TEMPO_MINUS", "half": 1, "clockSeconds": 450, "playerId": null, "recordedAt": "2026-09-06T17:07:30Z" },
+      { "eventId": "e09", "type": "TOR", "half": 2, "clockSeconds": 1850, "playerId": "p2", "recordedAt": "2026-09-06T17:50:50Z" },
+      { "eventId": "e10", "type": "TOR", "half": 2, "clockSeconds": 1900, "playerId": "p3", "recordedAt": "2026-09-06T17:51:40Z" },
+      { "eventId": "e11", "type": "GEHALTEN_7M", "half": 2, "clockSeconds": 2000, "playerId": "p4", "recordedAt": "2026-09-06T17:53:20Z" },
+      { "eventId": "e12", "type": "GGTOR_6M", "half": 2, "clockSeconds": 2100, "playerId": "p4", "recordedAt": "2026-09-06T17:55:00Z" },
+      { "eventId": "e13", "type": "TECHNISCHER_FEHLER", "half": 2, "clockSeconds": 2200, "playerId": "p1", "recordedAt": "2026-09-06T17:56:40Z" },
+      { "eventId": "e14", "type": "ABWEHR_PLUS", "half": 2, "clockSeconds": 2300, "playerId": null, "recordedAt": "2026-09-06T17:58:20Z" },
+      { "eventId": "e15", "type": "FEHLPASS", "half": 2, "clockSeconds": 2400, "playerId": "p2", "recordedAt": "2026-09-06T18:00:00Z" }
+    ]
+  },
+  "expected": {
+    "score": { "own": 3, "opponent": 2 },
+    "eventCount": 15,
+    "team": { "ANGRIFF_PLUS": 1, "ANGRIFF_MINUS": 0, "ABWEHR_PLUS": 1, "ABWEHR_MINUS": 0, "TEMPO_PLUS": 0, "TEMPO_MINUS": 1 },
+    "players": {
+      "p1": { "TOR": 1, "ASSIST": 0, "FW": 1, "FEHLPASS": 0, "TECHNISCHER_FEHLER": 1, "DEF_PLUS": 0, "DEF_MINUS": 0 },
+      "p2": { "TOR": 1, "ASSIST": 1, "FW": 0, "FEHLPASS": 1, "TECHNISCHER_FEHLER": 0, "DEF_PLUS": 0, "DEF_MINUS": 1 },
+      "p3": { "TOR": 1, "ASSIST": 0, "FW": 0, "FEHLPASS": 0, "TECHNISCHER_FEHLER": 0, "DEF_PLUS": 0, "DEF_MINUS": 0 },
+      "p4": { "TOR": 0, "ASSIST": 0, "FW": 0, "FEHLPASS": 0, "TECHNISCHER_FEHLER": 0, "DEF_PLUS": 0, "DEF_MINUS": 0 }
+    },
+    "goalkeepers": {
+      "p3": { "GEHALTEN_6M": 1, "GEHALTEN_7M": 0, "GEHALTEN_9M": 0, "GGTOR_6M": 0, "GGTOR_7M": 0, "GGTOR_9M": 1, "saves": 1, "conceded": 1, "shots": 2, "savePct": 50.0 },
+      "p4": { "GEHALTEN_6M": 0, "GEHALTEN_7M": 1, "GEHALTEN_9M": 0, "GGTOR_6M": 1, "GGTOR_7M": 0, "GGTOR_9M": 0, "saves": 1, "conceded": 1, "shots": 2, "savePct": 50.0 }
+    }
+  }
+}

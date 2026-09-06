@@ -1,0 +1,32 @@
+{
+  "groups": [
+    { "id": "team", "label": "Team" },
+    { "id": "offense", "label": "Angriff" },
+    { "id": "defense", "label": "Abwehr" },
+    { "id": "keeper", "label": "Torwart" }
+  ],
+  "events": [
+    { "id": "ANGRIFF_PLUS", "label": "Angriff+", "target": "none", "group": "team" },
+    { "id": "ANGRIFF_MINUS", "label": "Angriff-", "target": "none", "group": "team" },
+    { "id": "ABWEHR_PLUS", "label": "Abwehr+", "target": "none", "group": "team" },
+    { "id": "ABWEHR_MINUS", "label": "Abwehr-", "target": "none", "group": "team" },
+    { "id": "TEMPO_PLUS", "label": "Tempo+", "target": "none", "group": "team" },
+    { "id": "TEMPO_MINUS", "label": "Tempo-", "target": "none", "group": "team" },
+
+    { "id": "TOR", "label": "Tor", "target": "any", "group": "offense" },
+    { "id": "ASSIST", "label": "Assist", "target": "any", "group": "offense" },
+    { "id": "FW", "label": "FW", "target": "any", "group": "offense" },
+    { "id": "FEHLPASS", "label": "Fehlpass/Fangfehler", "target": "any", "group": "offense" },
+    { "id": "TECHNISCHER_FEHLER", "label": "technischer Fehler", "target": "any", "group": "offense" },
+
+    { "id": "DEF_PLUS", "label": "Def+", "target": "field", "group": "defense" },
+    { "id": "DEF_MINUS", "label": "Def-", "target": "field", "group": "defense" },
+
+    { "id": "GEHALTEN_6M", "label": "Gehalten 6m", "target": "goalkeeper", "group": "keeper" },
+    { "id": "GEHALTEN_7M", "label": "Gehalten 7m", "target": "goalkeeper", "group": "keeper" },
+    { "id": "GEHALTEN_9M", "label": "Gehalten 9m", "target": "goalkeeper", "group": "keeper" },
+    { "id": "GGTOR_6M", "label": "Ggtor 6m", "target": "goalkeeper", "group": "keeper" },
+    { "id": "GGTOR_7M", "label": "Ggtor 7m", "target": "goalkeeper", "group": "keeper" },
+    { "id": "GGTOR_9M", "label": "Ggtor 9m", "target": "goalkeeper", "group": "keeper" }
+  ]
+}
