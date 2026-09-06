@@ -385,6 +385,11 @@ th {
   white-space: nowrap;
 }
 
+.clockbar .score .sync {
+  display: inline-block;
+  margin-top: 0.2rem;
+}
+
 .clockbar .controls {
   display: flex;
   gap: 0.5rem;
@@ -452,6 +457,8 @@ th {
   color: #fff;
   padding: 0.4rem 0.5rem;
   line-height: 1.15;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .evbtn:active {
@@ -704,9 +711,20 @@ th {
   .clockbar .controls {
     grid-column: 1 / -1;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .clockbar .controls > button {
+    padding: 0.5rem 0.7rem;
+  }
+  .clockbar .startstop {
+    min-width: 84px;
+    flex: 1 1 auto;
   }
   .clockbar .time {
     font-size: 2rem;
+  }
+  .evbtn {
+    font-size: 0.95rem;
   }
   .shell-nav a {
     padding: 0.35rem 0.5rem;

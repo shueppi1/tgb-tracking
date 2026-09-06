@@ -5,6 +5,22 @@ interface Props {
   onSelect(event: EventType): void;
 }
 
+/** "Fehlpass/Fangfehler" gets a line-break opportunity after the slash on narrow screens. */
+function breakableLabel(label: string) {
+  const parts = label.split('/');
+  if (parts.length === 1) return label;
+  return parts.map((part, i) => (
+    <span key={i}>
+      {i > 0 && (
+        <>
+          /<wbr />
+        </>
+      )}
+      {part}
+    </span>
+  ));
+}
+
 /** Step 1 of the two-step recorder: colour-coded event buttons, labels only. */
 export default function EventGrid({ onSelect }: Props) {
   const [flashId, setFlashId] = useState<string | null>(null);
@@ -31,7 +47,7 @@ export default function EventGrid({ onSelect }: Props) {
                 data-group={event.group}
                 onClick={() => handle(event)}
               >
-                {event.label}
+                {breakableLabel(event.label)}
               </button>
             ))}
           </div>

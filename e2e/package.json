@@ -1,0 +1,11 @@
+{
+  "name": "tgb-tracking-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node smoke.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

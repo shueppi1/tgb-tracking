@@ -48,9 +48,9 @@ export default function ClockBar(props: Props) {
       <div className="score">
         {score.own} : {score.opponent}
         <small>TGB – {opponent}</small>
+        <SyncBadge status={sync} pending={pending} />
       </div>
       <div className="controls">
-        <SyncBadge status={sync} pending={pending} />
         <button
           type="button"
           className={`startstop ${clock.running ? 'running' : 'stopped'}`}
