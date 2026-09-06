@@ -29,8 +29,13 @@ export default function Login() {
 
   return (
     <div className="login">
-      <form className="card" onSubmit={submit}>
-        <h1>TGB Tracking</h1>
+      <div className="login-hero">
+        <img src="/logo.svg" alt="" width={65} height={119} />
+        <h1 className="brand">
+          <b>TGB</b> Tracking
+        </h1>
+      </div>
+      <form className="card brand-top" onSubmit={submit}>
         <p className="muted">Bitte mit dem Team-Passwort anmelden.</p>
         <label htmlFor="password">Passwort</label>
         <input
