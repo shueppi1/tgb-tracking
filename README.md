@@ -48,9 +48,13 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Die App läuft danach auf `http://<host>:8080` (Port über `WEB_PORT` änderbar). Nginx liefert
-das Frontend aus und leitet `/api` an die Flask-API (gunicorn) weiter; MongoDB speichert in
-das Volume `mongo-data`.
+Nginx liefert das Frontend aus und leitet `/api` an die Flask-API (gunicorn) weiter;
+MongoDB speichert in das Volume `mongo-data`.
+
+Die App lauscht standardmäßig nur lokal auf `http://127.0.0.1:8080` — passend dazu, dass
+davor ein Reverse-Proxy die TLS-Terminierung übernimmt (siehe unten). Ohne Proxy, für den
+direkten Zugriff aus dem LAN, in `.env` `WEB_BIND=0.0.0.0` setzen; die App ist dann unter
+`http://<host>:8080` **unverschlüsselt** erreichbar. Der Port ist über `WEB_PORT` änderbar.
 
 MongoDB ist bewusst auf `mongo:4.4.18` festgelegt: Alle neueren Builds (≥ 5.0 sowie ≥ 4.4.19)
 setzen ARMv8.2-A voraus, das die ARM-Hardware des Servers (z. B. Raspberry Pi 4) nicht bietet –
@@ -69,8 +73,59 @@ Passwort-Hash erzeugen:
 docker compose run --rm api python -m app.hash_password
 ```
 
-Für den Zugriff aus dem Internet empfiehlt sich ein Reverse-Proxy mit TLS (z. B. Caddy oder
-Traefik) vor dem `web`-Container.
+### Betrieb hinter einem bestehenden Caddy
+
+Für den Zugriff aus dem Internet gehört ein Reverse-Proxy mit TLS vor den `web`-Container.
+Läuft auf dem Host bereits ein Caddy (systemd), sind es drei Schritte —
+`deploy/Caddyfile.example` enthält den fertigen Block.
+
+**1. DNS.** Einen Namen wie `tgb.example.de` anlegen. Bei dynamischer IP als **CNAME** auf
+den Namen zeigen lassen, dessen A-Record der DDNS-Updater pflegt; der neue Name erbt die
+Adresse dann automatisch. Der Name muss auflösen, *bevor* Caddy neu geladen wird, sonst
+schlägt die erste Zertifikatsausstellung fehl (Let's Encrypt folgt CNAMEs).
+
+**2. Site-Block** an `/etc/caddy/Caddyfile` anhängen:
+
+```caddyfile
+https://tgb.example.de:443 {
+        encode zstd gzip
+        reverse_proxy 127.0.0.1:8080
+}
+```
+
+Zwei Stolperfallen: **`127.0.0.1` statt `localhost`** verwenden (auf Dual-Stack-Hosts löst
+`localhost` oft zuerst nach `::1` auf, während das Docker-Binding reines IPv4 ist →
+„connection refused"), und **Port 8080 muss auf dem Host frei sein**
+(`ss -ltnp | grep :8080`, sonst `WEB_PORT` in `.env` ändern).
+
+Ein `basic_auth` davor ist nicht nötig — die App hat einen eigenen Login.
+
+Caddy öffnet neben 443 auch **Port 80**, für den automatischen HTTP→HTTPS-Redirect und die
+ACME-HTTP-Challenge. Ist 80 von außen nicht erreichbar, wird das Zertifikat weiterhin über
+TLS-ALPN auf 443 ausgestellt, der Redirect von `http://` läuft dann aber ins Leere.
+
+**3. Übernehmen und prüfen:**
+
+```bash
+caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+
+curl -s  http://127.0.0.1:8080/api/health     # {"ok":true}  — Container erreichbar
+curl -sI https://tgb.example.de/ | head -1    # HTTP/2 200   — Proxy + TLS stehen
+```
+
+Läuft Caddy stattdessen selbst in einem Container, erreicht er `127.0.0.1` des Hosts nicht;
+dann `web` ins selbe Docker-Netz hängen und auf `web:80` proxien.
+
+#### Kein eigener API-Host nötig
+
+Die App ist Single-Origin: das Frontend ruft `/api` **relativ** auf, und nginx routet
+`/api/` intern an den Flask-Container. Ein zusätzlicher `api.`-Name würde CORS erzwingen,
+jedem Request einen `OPTIONS`-Preflight voranstellen (spürbar beim Erfassen über Mobilfunk)
+und eine buildzeit-fixierte API-URL ins Frontend einbacken — ohne Gegenwert.
+
+Aus demselben Grund muss beim **Wechsel der Domain nichts neu gebaut werden**: die Domain
+steht ausschließlich im DNS und im Caddyfile.
 
 ### Backup & Restore
 
@@ -140,4 +195,6 @@ frontend/src/store/         zustand-Stores, Outbox (localStorage)
 frontend/src/pages/         Login, Übersicht, Kader, Neues Spiel, Tracking, Auswertung, Archiv, Statistik
 frontend/src/components/    ClockBar, EventGrid, PlayerSheet, SummaryTables, EventLog, …
 docker-compose.yml          mongo + api + web
+deploy/Caddyfile.example    Site-Block für einen Caddy auf dem Host
+e2e/                        Playwright-Smoketest + mongomock-Devserver
 ```

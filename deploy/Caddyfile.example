@@ -1,0 +1,41 @@
+# Site-Block für einen Caddy, der bereits auf dem Host läuft (systemd, nicht im Container).
+# An /etc/caddy/Caddyfile anhängen, Domain anpassen, dann:
+#   caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+#
+# Voraussetzung: In .env ist WEB_BIND=127.0.0.1 gesetzt (Default), damit der nginx-Container
+# nur lokal lauscht und niemand die TLS-Terminierung über Port 8080 umgehen kann.
+#
+# Ports: Caddy öffnet zusätzlich zu 443 auch Port 80 – für den automatischen
+# HTTP->HTTPS-Redirect und die ACME-HTTP-Challenge. Ist 80 von außen nicht erreichbar,
+# klappt die Zertifikatsausstellung weiterhin über TLS-ALPN auf 443, aber der Redirect
+# von http:// läuft dann ins Leere.
+
+https://tgb.shueppi.de:443 {
+	encode zstd gzip
+
+	# 127.0.0.1 statt localhost verwenden!
+	# Auf einem Dual-Stack-Host löst "localhost" häufig zuerst nach ::1 auf, während das
+	# Docker-Port-Binding reines IPv4 ist -> "connection refused".
+	# Der Port muss WEB_PORT aus .env entsprechen (Default 8080); vorher prüfen, dass er
+	# auf dem Host frei ist:  ss -ltnp | grep :8080
+	reverse_proxy 127.0.0.1:8080
+
+	# Optional. Bewusst explizit setzen statt auf ein Caddy-Default zu vertrauen.
+	# includeSubDomains/preload nur ergänzen, wenn wirklich alle Namen unterhalb dieses
+	# Hosts dauerhaft HTTPS sprechen.
+	# header {
+	#	Strict-Transport-Security "max-age=31536000"
+	#	X-Content-Type-Options nosniff
+	#	Referrer-Policy strict-origin-when-cross-origin
+	# }
+}
+
+# Ein separater API-Host wird NICHT gebraucht: das Frontend ruft /api relativ auf und der
+# nginx im web-Container routet /api/ intern an den Flask-Container. Ein eigener api.-Host
+# würde CORS, einen OPTIONS-Preflight pro Request und einen buildzeit-fixierten
+# VITE_API_BASE_URL erzwingen - ohne Gegenwert.
+#
+# Falls ein bereits angelegter api.-DNS-Eintrag nicht ins Leere laufen soll:
+# https://api.tgb.shueppi.de:443 {
+#	redir https://tgb.shueppi.de{uri} permanent
+# }
