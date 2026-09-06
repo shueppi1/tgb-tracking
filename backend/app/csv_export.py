@@ -48,23 +48,26 @@ def base_filename(match: dict) -> str:
     return f"{date}_{slugify(match.get('opponent', ''))}"
 
 
+def event_label(catalog: dict, event_type: str) -> str:
+    return catalog["byId"].get(event_type, {}).get("label", event_type)
+
+
 def events_csv(match: dict, catalog: dict) -> str:
-    roster = {str(m["playerId"]): m for m in match.get("roster", [])}
+    """Timestamps of the team events (those recorded without a player), sorted by title —
+    events of the same title stay in chronological order."""
     buf, w = _writer()
-    w.writerow(["Nr", "Halbzeit", "Spielzeit", "Ereignis", "Nummer", "Anzeigename", "Position",
-                "Uhrzeit (UTC)"])
-    events = sorted(match.get("events", []), key=lambda e: (e["half"], e["clockSeconds"],
-                                                            e.get("recordedAt") or datetime.min))
+    w.writerow(["Nr", "Ereignis", "Halbzeit", "Spielzeit", "Uhrzeit (UTC)"])
+    events = sorted(
+        (ev for ev in match.get("events", []) if ev.get("playerId") is None),
+        key=lambda ev: (event_label(catalog, ev["type"]), ev["half"], ev["clockSeconds"],
+                        _fmt_dt(ev.get("recordedAt"))),
+    )
     for i, ev in enumerate(events, start=1):
-        member = roster.get(str(ev.get("playerId"))) if ev.get("playerId") else None
         w.writerow([
             i,
+            event_label(catalog, ev["type"]),
             ev["half"],
             format_clock(ev["clockSeconds"]),
-            catalog["byId"].get(ev["type"], {}).get("label", ev["type"]),
-            member["number"] if member else "",
-            member["displayName"] if member else "",
-            POSITION_LABEL.get(member["position"], "") if member else "",
             _fmt_dt(ev.get("recordedAt")),
         ])
     return buf.getvalue()
