@@ -3,7 +3,7 @@
 #   caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
 #
 # Voraussetzung: In .env ist WEB_BIND=127.0.0.1 gesetzt (Default), damit der nginx-Container
-# nur lokal lauscht und niemand die TLS-Terminierung über Port 8080 umgehen kann.
+# nur lokal lauscht und niemand die TLS-Terminierung über Port 8090 umgehen kann.
 #
 # Ports: Caddy öffnet zusätzlich zu 443 auch Port 80 – für den automatischen
 # HTTP->HTTPS-Redirect und die ACME-HTTP-Challenge. Ist 80 von außen nicht erreichbar,
@@ -16,9 +16,9 @@ https://tgb.shueppi.de:443 {
 	# 127.0.0.1 statt localhost verwenden!
 	# Auf einem Dual-Stack-Host löst "localhost" häufig zuerst nach ::1 auf, während das
 	# Docker-Port-Binding reines IPv4 ist -> "connection refused".
-	# Der Port muss WEB_PORT aus .env entsprechen (Default 8080); vorher prüfen, dass er
-	# auf dem Host frei ist:  ss -ltnp | grep :8080
-	reverse_proxy 127.0.0.1:8080
+	# Der Port muss WEB_PORT aus .env entsprechen (Default 8090); vorher prüfen, dass er
+	# auf dem Host frei ist:  ss -ltnp | grep :8090
+	reverse_proxy 127.0.0.1:8090
 
 	# Optional. Bewusst explizit setzen statt auf ein Caddy-Default zu vertrauen.
 	# includeSubDomains/preload nur ergänzen, wenn wirklich alle Namen unterhalb dieses

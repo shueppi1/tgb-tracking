@@ -51,10 +51,10 @@ docker compose up -d --build
 Nginx liefert das Frontend aus und leitet `/api` an die Flask-API (gunicorn) weiter;
 MongoDB speichert in das Volume `mongo-data`.
 
-Die App lauscht standardmäßig nur lokal auf `http://127.0.0.1:8080` — passend dazu, dass
+Die App lauscht standardmäßig nur lokal auf `http://127.0.0.1:8090` — passend dazu, dass
 davor ein Reverse-Proxy die TLS-Terminierung übernimmt (siehe unten). Ohne Proxy, für den
 direkten Zugriff aus dem LAN, in `.env` `WEB_BIND=0.0.0.0` setzen; die App ist dann unter
-`http://<host>:8080` **unverschlüsselt** erreichbar. Der Port ist über `WEB_PORT` änderbar.
+`http://<host>:8090` **unverschlüsselt** erreichbar. Der Port ist über `WEB_PORT` änderbar.
 
 MongoDB ist bewusst auf `mongo:4.4.18` festgelegt: Alle neueren Builds (≥ 5.0 sowie ≥ 4.4.19)
 setzen ARMv8.2-A voraus, das die ARM-Hardware des Servers (z. B. Raspberry Pi 4) nicht bietet –
@@ -89,14 +89,19 @@ schlägt die erste Zertifikatsausstellung fehl (Let's Encrypt folgt CNAMEs).
 ```caddyfile
 https://tgb.example.de:443 {
         encode zstd gzip
-        reverse_proxy 127.0.0.1:8080
+        reverse_proxy 127.0.0.1:8090
 }
 ```
 
 Zwei Stolperfallen: **`127.0.0.1` statt `localhost`** verwenden (auf Dual-Stack-Hosts löst
 `localhost` oft zuerst nach `::1` auf, während das Docker-Binding reines IPv4 ist →
-„connection refused"), und **Port 8080 muss auf dem Host frei sein**
-(`ss -ltnp | grep :8080`, sonst `WEB_PORT` in `.env` ändern).
+„connection refused"), und **der Port muss auf dem Host frei sein**. Der Default ist
+bewusst 8090 und nicht 8080 — 8080 ist auf Servern häufig schon belegt (u. a. vom
+Admin-Interface von Nextcloud AIO). Prüfen und ggf. `WEB_PORT` in `.env` ändern:
+
+```bash
+ss -ltnp | grep :8090        # nichts = frei
+```
 
 Ein `basic_auth` davor ist nicht nötig — die App hat einen eigenen Login.
 
@@ -110,7 +115,7 @@ TLS-ALPN auf 443 ausgestellt, der Redirect von `http://` läuft dann aber ins Le
 caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 
-curl -s  http://127.0.0.1:8080/api/health     # {"ok":true}  — Container erreichbar
+curl -s  http://127.0.0.1:8090/api/health     # {"ok":true}  — Container erreichbar
 curl -sI https://tgb.example.de/ | head -1    # HTTP/2 200   — Proxy + TLS stehen
 ```
 
