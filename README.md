@@ -14,7 +14,10 @@ Live-Tracking mit Spieluhr, Auswertung mit CSV-Export, Archiv und Saisonstatisti
    tatsächlich spielenden Personen (mind. ein Feldspieler und ein Torwart).
 3. **Tracking** – Spieluhr (1. HZ 0→30, 2. HZ 30→60, stoppbar, korrigierbar), Ereignisse in
    zwei Schritten: erst Ereignis, dann – falls nötig – Spieler/Torwart. Live-Zusammenfassung,
-   Verlauf mit Löschen einzelner Einträge, Rückgängig.
+   Verlauf mit Löschen einzelner Einträge, Rückgängig. Zusammenfassung und Verlauf zeigen die
+   **laufende Halbzeit**: in der 2. HZ also nur deren Tore, Paraden usw.; ein Umschalter
+   blendet wahlweise das gesamte Spiel ein. Der Spielstand oben in der Uhrleiste bleibt
+   immer der Gesamtstand.
 4. **Auswertung** – Spieler-, Torhüter- und Team-Tabellen, drei CSV-Dateien (Ereignisse,
    Spieler, Torhüter) oder als ZIP. Die Ereignis-Datei enthält nur die Zeitstempel der
    Team-Ereignisse (ohne Spieler), nach Titel sortiert.

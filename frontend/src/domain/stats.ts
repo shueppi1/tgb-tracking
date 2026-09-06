@@ -5,6 +5,7 @@
 import { CONCEDED_IDS, KEEPER_EVENT_IDS, PLAYER_EVENT_IDS, SAVE_IDS, TEAM_EVENT_IDS } from './events';
 import type {
   Counts,
+  Half,
   KeeperSummaryRow,
   MatchEvent,
   MatchSummary,
@@ -14,6 +15,11 @@ import type {
 } from './types';
 
 export const TEAM_KEY = '__team__';
+
+/** Events recorded in one half — the live tracking view aggregates per half. */
+export function eventsInHalf(events: MatchEvent[], half: Half): MatchEvent[] {
+  return events.filter((ev) => ev.half === half);
+}
 
 /** {playerId | TEAM_KEY: {eventType: count}} */
 export function countMatrix(events: MatchEvent[]): Map<string, Counts> {
