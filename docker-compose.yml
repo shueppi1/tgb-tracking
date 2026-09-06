@@ -1,11 +1,14 @@
 services:
   mongo:
-    image: mongo:7
+    # Pinned: MongoDB >= 5.0 and >= 4.4.19 require ARMv8.2-A, which the ARM host does not
+    # implement (SERVER-71772). 4.4.18 is the last build that runs there.
+    image: mongo:4.4.18
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      # 4.4 ships the legacy `mongo` shell; `mongosh` only exists from 5.0 on.
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 10s
       timeout: 5s
       retries: 10
