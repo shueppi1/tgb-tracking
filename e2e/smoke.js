@@ -226,12 +226,35 @@ async function main() {
     expect((await page.textContent('.clockbar .half')).startsWith('2.'), 'now 2nd half');
     log('half ended → 30:00, 2. Halbzeit');
 
+    // the panels restart with the new half; the clock bar keeps the total score
+    await page.waitForSelector('.panel-scope button.active:has-text("Nur 2. Halbzeit")');
+    await page.waitForSelector('button:has-text("Verlauf (0)")');
+    await page.waitForSelector('.panel-caption:has-text("2. Halbzeit · 0 : 0")');
+    await page.waitForSelector('.clockbar .score:has-text("2 : 1")');
+    log('2nd half starts empty, clock bar still 2 : 1');
+
     await page.click('.clockbar .startstop:has-text("Start")');
     await ev('Tor').click();
     await page.click('.sheet button.tile:has-text("Timo")');
     await page.waitForSelector('.clockbar .score:has-text("3 : 1")');
     await page.waitForSelector('.sync[data-status="synced"]');
     log('keeper scored in 2nd half, 3 : 1');
+
+    // summary counts only the 2nd half: Max scored before the break, so his row is empty
+    await page.waitForSelector('.panel-caption:has-text("2. Halbzeit · 1 : 0")');
+    await page.waitForSelector('button:has-text("Verlauf (1)")');
+    const maxHalf2 = page.locator('.panel-body table tr', { has: page.locator('td:text-is("Max")') }).first();
+    expect((await maxHalf2.locator('td').allTextContents())[2] === '', 'Max has no Tor in the 2nd-half summary');
+    log('summary + Verlauf show the 2nd half only');
+
+    // switching to the whole match brings the 1st half back
+    await page.click('.panel-scope button:has-text("Gesamtes Spiel")');
+    await page.waitForSelector('.panel-caption:has-text("Gesamtes Spiel · 3 : 1")');
+    await page.waitForSelector('button:has-text("Verlauf (6)")');
+    expect((await maxHalf2.locator('td').allTextContents())[2] === '1', 'Max has 1 Tor in the whole-match summary');
+    await page.click('.panel-scope button:has-text("Nur 2. Halbzeit")');
+    await page.waitForSelector('button:has-text("Verlauf (1)")');
+    log('scope switch: Gesamtes Spiel ↔ Nur 2. Halbzeit');
 
     await ev('Tempo+').click();
     await page.waitForSelector('.stat:has(.label:text-is("Tempo+")) .value:text-is("1")');

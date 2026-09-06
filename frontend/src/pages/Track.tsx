@@ -8,7 +8,7 @@ import PlayerSheet from '../components/PlayerSheet';
 import SummaryTables from '../components/SummaryTables';
 import { elapsedSeconds } from '../domain/clock';
 import type { EventType } from '../domain/events';
-import { buildSummary } from '../domain/stats';
+import { buildSummary, eventsInHalf } from '../domain/stats';
 import type { Half } from '../domain/types';
 import { useMatchStore } from '../store/matchStore';
 
@@ -19,6 +19,9 @@ interface PendingEvent {
   clockSeconds: number;
 }
 
+/** Which events the summary and the log show: the running half only, or the whole match. */
+type Scope = 'half' | 'match';
+
 export default function Track() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -27,7 +30,9 @@ export default function Track() {
   const [pending, setPending] = useState<PendingEvent | null>(null);
   const [correcting, setCorrecting] = useState(false);
   const [panel, setPanel] = useState<'summary' | 'log' | null>('summary');
+  const [scope, setScope] = useState<Scope>('half');
   const [finishError, setFinishError] = useState<string | null>(null);
+  const half = match?.clock.half ?? 1;
 
   useEffect(() => {
     if (id) void store.load(id);
@@ -35,15 +40,29 @@ export default function Track() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const summary = useMemo(
+  // The scope switch only exists in the second half; before that there is nothing to split.
+  const splitHalves = half === 2;
+  const shown: Scope = splitHalves ? scope : 'half';
+
+  /** Events the panels show — the current half unless the whole match was selected. */
+  const visible = useMemo(() => {
+    if (!match) return [];
+    return shown === 'match' ? match.events : eventsInHalf(match.events, half);
+  }, [match, shown, half]);
+
+  /** Whole-match totals; the clock bar always shows the real score. */
+  const total = useMemo(
     () => (match ? buildSummary(match.roster, match.events) : null),
     [match],
+  );
+  const summary = useMemo(
+    () => (match ? buildSummary(match.roster, visible) : null),
+    [match, visible],
   );
 
   const onSelectEvent = useCallback(
     (event: EventType) => {
       if (!match) return;
-      const half = match.clock.half;
       const clockSeconds = elapsedSeconds(match.clock, Date.now());
       if (event.target === 'none') {
         store.addEvent(event.id, null, half, clockSeconds);
@@ -51,7 +70,7 @@ export default function Track() {
         setPending({ event, half, clockSeconds });
       }
     },
-    [match, store],
+    [match, store, half],
   );
 
   const cancelPending = useCallback(() => setPending(null), []);
@@ -94,7 +113,7 @@ export default function Track() {
     <div className="track">
       <ClockBar
         clock={match.clock}
-        score={summary!.score}
+        score={total!.score}
         opponent={match.opponent}
         sync={sync}
         pending={pendingCount}
@@ -131,17 +150,33 @@ export default function Track() {
               Zusammenfassung
             </button>
             <button type="button" className={panel === 'log' ? 'active' : ''} onClick={() => setPanel(panel === 'log' ? null : 'log')}>
-              Verlauf ({match.events.length})
+              Verlauf ({visible.length})
             </button>
           </div>
+          {panel && splitHalves && (
+            <div className="panel-scope" role="group" aria-label="Zeitraum">
+              <button type="button" className={shown === 'half' ? 'active' : ''} onClick={() => setScope('half')}>
+                Nur 2. Halbzeit
+              </button>
+              <button type="button" className={shown === 'match' ? 'active' : ''} onClick={() => setScope('match')}>
+                Gesamtes Spiel
+              </button>
+            </div>
+          )}
           {panel === 'summary' && summary && (
             <div className="panel-body">
+              {splitHalves && (
+                <p className="panel-caption">
+                  {shown === 'half' ? '2. Halbzeit' : 'Gesamtes Spiel'} · {summary.score.own} :{' '}
+                  {summary.score.opponent}
+                </p>
+              )}
               <SummaryTables players={summary.players} goalkeepers={summary.goalkeepers} team={summary.team} compact />
             </div>
           )}
           {panel === 'log' && (
             <div className="panel-body">
-              <EventLog events={match.events} roster={match.roster} onDelete={(eid) => store.deleteEvent(eid)} />
+              <EventLog events={visible} roster={match.roster} onDelete={(eid) => store.deleteEvent(eid)} />
             </div>
           )}
         </div>
