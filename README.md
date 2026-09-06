@@ -52,6 +52,17 @@ Die App läuft danach auf `http://<host>:8080` (Port über `WEB_PORT` änderbar)
 das Frontend aus und leitet `/api` an die Flask-API (gunicorn) weiter; MongoDB speichert in
 das Volume `mongo-data`.
 
+MongoDB ist bewusst auf `mongo:4.4.18` festgelegt: Alle neueren Builds (≥ 5.0 sowie ≥ 4.4.19)
+setzen ARMv8.2-A voraus, das die ARM-Hardware des Servers (z. B. Raspberry Pi 4) nicht bietet –
+sie starten dort nur mit Warnung und laufen unzuverlässig. Beim Wechsel von einer älteren
+Installation mit MongoDB 7 muss das Volume verworfen werden, weil 4.4 die Datendateien von 7.0
+nicht lesen kann (vorher ggf. ein Backup ziehen, siehe unten):
+
+```bash
+docker compose down -v   # verwirft das Volume mongo-data
+docker compose up -d --build
+```
+
 Passwort-Hash erzeugen:
 
 ```bash
@@ -72,7 +83,7 @@ docker compose exec -T mongo mongorestore --archive --drop < tgb-2026-09-06.arch
 
 ## Lokale Entwicklung
 
-Voraussetzungen: Python 3.11+, Node 22, eine erreichbare MongoDB (z. B. `docker run -p 27017:27017 mongo:7`).
+Voraussetzungen: Python 3.11+, Node 22, eine erreichbare MongoDB (z. B. `docker run -p 27017:27017 mongo:4.4.18`).
 
 ```bash
 # Backend
